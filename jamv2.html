@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modern Hacker Clock - AlfiDev</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600;800&family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #0a0a0a;
+            font-family: 'JetBrains Mono', monospace;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(45deg, transparent, rgba(0, 255, 0, 0.02), transparent),
+                radial-gradient(circle at 30% 70%, rgba(0, 255, 0, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 70% 30%, rgba(0, 255, 0, 0.1) 0%, transparent 50%);
+            animation: matrixGlow 8s ease-in-out infinite;
+        }
+        
+        @keyframes matrixGlow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+        
+        .matrix-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .matrix-column {
+            position: absolute;
+            top: -100%;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            color: #00ff00;
+            white-space: pre;
+            opacity: 0.3;
+            animation: matrixFall linear infinite;
+        }
+        
+        @keyframes matrixFall {
+            to {
+                transform: translateY(100vh);
+            }
+        }
+        
+        .clock-container {
+            width: 1000px;
+            height: 650px;
+            background: rgba(0, 0, 0, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 40px;
+            position: relative;
+            border: 2px solid rgba(0, 255, 0, 0.3);
+            box-shadow: 
+                0 0 50px rgba(0, 255, 0, 0.2),
+                inset 0 0 50px rgba(0, 255, 0, 0.05);
+            z-index: 10;
+        }
+        
+        .clock-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, transparent, rgba(0, 255, 0, 0.1), transparent);
+            animation: scanline 3s linear infinite;
+            border-radius: 20px;
+        }
+        
+        @keyframes scanline {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 20;
+        }
+        
+        .brand {
+            color: #00ff00;
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .brand i {
+            font-size: 24px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .timezone-controls {
+            display: flex;
+            gap: 8px;
+            background: rgba(0, 255, 0, 0.1);
+            padding: 6px;
+            border-radius: 15px;
+            border: 1px solid rgba(0, 255, 0, 0.3);
+        }
+        
+        .tz-btn {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            color: rgba(0, 255, 0, 0.7);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .tz-btn.active {
+            background: rgba(0, 255, 0, 0.2);
+            color: #00ff00;
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+        }
+        
+        .tz-btn:hover {
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 5px rgba(0, 255, 0, 0.3);
+        }
+        
+        .main-display {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+            z-index: 20;
+        }
+        
+        .time-display {
+            font-family: 'Orbitron', monospace;
+            font-size: 5rem;
+            font-weight: 900;
+            color: #00ff00;
+            text-shadow: 0 0 20px rgba(0, 255, 0, 0.8);
+            margin-bottom: 20px;
+            position: relative;
+            letter-spacing: 5px;
+        }
+        
+        .time-display::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #00ff00, transparent);
+            animation: timePulse 1s ease-in-out infinite;
+        }
+        
+        @keyframes timePulse {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+        
+        .date-display {
+            font-size: 1.2rem;
+            color: rgba(0, 255, 0, 0.8);
+            margin-bottom: 30px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .terminal-area {
+            min-height: 150px;
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border: 2px solid rgba(0, 255, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .terminal-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            color: #00ff00;
+            font-size: 14px;
+        }
+        
+        .terminal-dots {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .dot.red { background: #ff5f56; }
+        .dot.yellow { background: #ffbd2e; }
+        .dot.green { background: #27ca3f; }
+        
+        .terminal-content {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            color: #00ff00;
+            font-family: 'JetBrains Mono', monospace;
+            position: relative;
+            min-height: 80px;
+        }
+        
+        .terminal-cursor {
+            display: inline-block;
+            width: 8px;
+            height: 1.2rem;
+            background: #00ff00;
+            animation: blink 1s infinite;
+            margin-left: 2px;
+        }
+        
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        .terminal-prompt {
+            color: #00ff00;
+            margin-right: 10px;
+        }
+        
+        .alarm-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 255, 0, 0.05);
+            padding: 20px;
+            border-radius: 15px;
+            border: 1px solid rgba(0, 255, 0, 0.3);
+            margin-bottom: 20px;
+        }
+        
+        .alarm-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .alarm-input {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(0, 255, 0, 0.3);
+            border-radius: 10px;
+            padding: 12px 16px;
+            color: #00ff00;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            width: 120px;
+        }
+        
+        .alarm-input:focus {
+            outline: none;
+            border-color: #00ff00;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+        }
+        
+        .alarm-btn {
+            background: rgba(0, 255, 0, 0.1);
+            border: 2px solid rgba(0, 255, 0, 0.5);
+            color: #00ff00;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .alarm-btn:hover {
+            background: rgba(0, 255, 0, 0.2);
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.4);
+        }
+        
+        .alarm-btn.active {
+            background: rgba(255, 0, 0, 0.2);
+            border-color: #ff0000;
+            color: #ff0000;
+            animation: alarmBlink 1s infinite;
+        }
+        
+        @keyframes alarmBlink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.7; }
+        }
+        
+        .alarm-status {
+            color: rgba(0, 255, 0, 0.7);
+            font-size: 14px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .footer-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: rgba(0, 255, 0, 0.6);
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #00ff00;
+            animation: statusPulse 2s infinite;
+        }
+        
+        @keyframes statusPulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+        
+        .alarm-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        
+        .alarm-content {
+            background: rgba(255, 0, 0, 0.1);
+            border: 3px solid #ff0000;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            color: #ff0000;
+            animation: alarmShake 0.5s infinite;
+        }
+        
+        @keyframes alarmShake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-5px); }
+            75% { transform: translateX(5px); }
+        }
+        
+        .alarm-title {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            font-weight: 800;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .alarm-time {
+            font-size: 3rem;
+            font-family: 'Orbitron', monospace;
+            margin-bottom: 30px;
+        }
+        
+        .alarm-dismiss {
+            background: rgba(255, 0, 0, 0.2);
+            border: 2px solid #ff0000;
+            color: #ff0000;
+            padding: 15px 30px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-family: 'JetBrains Mono', monospace;
+        }
+        
+        .alarm-dismiss:hover {
+            background: rgba(255, 0, 0, 0.3);
+            box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+        }
+    </style>
+</head>
+<body>
+    <div class="matrix-bg" id="matrixBg"></div>
+    
+    <div class="clock-container">
+        <div class="header">
+            <div class="brand">
+                <i class="fas fa-terminal"></i>
+                HACKER CLOCK v2.0
+            </div>
+            <div class="timezone-controls">
+                <button class="tz-btn active" data-tz="wib">WIB</button>
+                <button class="tz-btn" data-tz="wita">WITA</button>
+                <button class="tz-btn" data-tz="wit">WIT</button>
+            </div>
+        </div>
+        
+        <div class="main-display">
+            <div class="time-display" id="timeDisplay">00:00:00</div>
+            <div class="date-display" id="dateDisplay">Loading...</div>
+        </div>
+        
+        <div class="terminal-area">
+            <div class="terminal-header">
+                <div class="terminal-dots">
+                    <div class="dot red"></div>
+                    <div class="dot yellow"></div>
+                    <div class="dot green"></div>
+                </div>
+                <span>root@hackerclock:~$</span>
+            </div>
+            <div class="terminal-content">
+                <span class="terminal-prompt">></span>
+                <span id="terminalText"></span>
+                <span class="terminal-cursor" id="cursor"></span>
+            </div>
+        </div>
+        
+        <div class="alarm-section">
+            <div class="alarm-controls">
+                <input type="time" class="alarm-input" id="alarmInput">
+                <button class="alarm-btn" id="alarmBtn">
+                    <i class="fas fa-bell"></i> SET ALARM
+                </button>
+            </div>
+            <div class="alarm-status" id="alarmStatus">NO ALARM ACTIVE</div>
+        </div>
+        
+        <div class="footer-stats">
+            <div class="status-indicator">
+                <div class="status-dot"></div>
+                <span>LIVE • <span id="currentTz">WIB</span> • SECURE</span>
+            </div>
+            <div><i class="fas fa-code"></i> POWERED BY ALFIDEV</div>
+        </div>
+    </div>
+
+    <div class="alarm-modal" id="alarmModal">
+        <div class="alarm-content">
+            <div class="alarm-title"><i class="fas fa-exclamation-triangle"></i> ALARM TRIGGERED</div>
+            <div class="alarm-time" id="alarmModalTime"></div>
+            <button class="alarm-dismiss" onclick="dismissAlarm()">
+                <i class="fas fa-times"></i> DISMISS
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const TIMEZONES = { wib: 7, wita: 8, wit: 9 };
+        const HACKER_TEXTS = [
+            "SYSTEM BREACH DETECTED AT {time}",
+            "NEURAL NETWORK SYNCHRONIZED AT {time}",
+            "QUANTUM ENCRYPTION ACTIVE AT {time}",
+            "CYBERSECURITY PROTOCOL INITIALIZED {time}",
+            "MATRIX CONNECTION ESTABLISHED {time}",
+            "DIGITAL FORTRESS SECURED AT {time}",
+            "FIREWALL STATUS: ACTIVE AT {time}",
+            "CRYPTO MINING OPERATION LIVE {time}",
+            "BLOCKCHAIN VERIFICATION COMPLETE {time}",
+            "AI CONSCIOUSNESS AWAKENED AT {time}"
+        ];
+        
+        let currentTz = 'wib';
+        let currentMinute = -1;
+        let isTyping = false;
+        let alarmTime = null;
+        let alarmActive = false;
+        let typingInterval;
+        
+        const timeDisplay = document.getElementById('timeDisplay');
+        const dateDisplay = document.getElementById('dateDisplay');
+        const terminalText = document.getElementById('terminalText');
+        const cursor = document.getElementById('cursor');
+        const alarmInput = document.getElementById('alarmInput');
+        const alarmBtn = document.getElementById('alarmBtn');
+        const alarmStatus = document.getElementById('alarmStatus');
+        const alarmModal = document.getElementById('alarmModal');
+        const alarmModalTime = document.getElementById('alarmModalTime');
+        const currentTzDisplay = document.getElementById('currentTz');
+        const matrixBg = document.getElementById('matrixBg');
+        
+        function createMatrixEffect() {
+            const columns = Math.floor(window.innerWidth / 20);
+            const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789@#$%^&*()";
+            
+            for (let i = 0; i < columns; i++) {
+                const column = document.createElement('div');
+                column.className = 'matrix-column';
+                column.style.left = i * 20 + 'px';
+                column.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                column.style.animationDelay = Math.random() * 2 + 's';
+                
+                let text = '';
+                for (let j = 0; j < 30; j++) {
+                    text += chars[Math.floor(Math.random() * chars.length)] + '\n';
+                }
+                column.textContent = text;
+                
+                matrixBg.appendChild(column);
+            }
+        }
+        
+        function getTime(tz) {
+            const now = new Date();
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            return new Date(utc + (TIMEZONES[tz] * 3600000));
+        }
+        
+        function formatTime(date) {
+            return date.toLocaleTimeString('id-ID', { 
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit',
+                hour12: false 
+            });
+        }
+        
+        function formatDate(date) {
+            return date.toLocaleDateString('id-ID', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+        }
+        
+        function typeHackerText(text) {
+            if (isTyping) return;
+            
+            isTyping = true;
+            terminalText.textContent = '';
+            cursor.style.display = 'inline-block';
+            
+            let i = 0;
+            typingInterval = setInterval(() => {
+                if (i < text.length) {
+                    terminalText.textContent += text[i];
+                    i++;
+                } else {
+                    clearInterval(typingInterval);
+                    setTimeout(() => {
+                        cursor.style.display = 'none';
+                        isTyping = false;
+                    }, 2000);
+                }
+            }, 80);
+        }
+        
+        function playAlarmSound() {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            
+            for (let i = 0; i < 3; i++) {
+                setTimeout(() => {
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.type = 'square';
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    
+                    gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+                    gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.1);
+                    gainNode.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.5);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.5);
+                }, i * 300);
+            }
+        }
+        
+        function updateClock() {
+            const now = getTime(currentTz);
+            const timeStr = formatTime(now);
+            const dateStr = formatDate(now);
+            const minute = now.getMinutes();
+            
+            timeDisplay.textContent = timeStr;
+            dateDisplay.textContent = dateStr;
+            
+            if (minute !== currentMinute && !isTyping) {
+                currentMinute = minute;
+                const randomText = HACKER_TEXTS[Math.floor(Math.random() * HACKER_TEXTS.length)];
+                const textWithTime = randomText.replace('{time}', timeStr.substring(0, 5));
+                typeHackerText(textWithTime);
+            }
+            
+            if (alarmTime && alarmActive) {
+                const currentTime = timeStr.substring(0, 5);
+                if (currentTime === alarmTime) {
+                    triggerAlarm();
+                }
+            }
+        }
+        
+        function setAlarm() {
+            if (!alarmActive) {
+                alarmTime = alarmInput.value;
+                if (alarmTime) {
+                    alarmActive = true;
+                    alarmBtn.innerHTML = '<i class="fas fa-bell-slash"></i> CANCEL ALARM';
+                    alarmBtn.classList.add('active');
+                    alarmStatus.textContent = `ALARM ACTIVE: ${alarmTime}`;
+                }
+            } else {
+                alarmActive = false;
+                alarmTime = null;
+                alarmBtn.innerHTML = '<i class="fas fa-bell"></i> SET ALARM';
+                alarmBtn.classList.remove('active');
+                alarmStatus.textContent = 'NO ALARM ACTIVE';
+            }
+        }
+        
+        function triggerAlarm() {
+            alarmModal.style.display = 'flex';
+            alarmModalTime.textContent = alarmTime;
+            playAlarmSound();
+            alarmActive = false;
+            alarmBtn.innerHTML = '<i class="fas fa-bell"></i> SET ALARM';
+            alarmBtn.classList.remove('active');
+            alarmStatus.textContent = 'ALARM TRIGGERED!';
+        }
+        
+        function dismissAlarm() {
+            alarmModal.style.display = 'none';
+            alarmStatus.textContent = 'NO ALARM ACTIVE';
+        }
+        
+        document.querySelectorAll('.tz-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tz-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTz = btn.dataset.tz;
+                currentTzDisplay.textContent = currentTz.toUpperCase();
+                currentMinute = -1;
+                
+                if (isTyping) {
+                    isTyping = false;
+                    clearInterval(typingInterval);
+                    cursor.style.display = 'none';
+                }
+            });
+        });
+        
+        alarmBtn.addEventListener('click', setAlarm);
+        
+        createMatrixEffect();
+        updateClock();
+        setInterval(updateClock, 100);
+    </script>
+</body>
+</html>
