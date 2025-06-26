@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jam RealTime Indonesia - AlfiDev</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 50%, #16213e 100%);
+            font-family: 'Orbitron', monospace;
+            overflow: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%, transparent 70%);
+            animation: pulse-bg 4s ease-in-out infinite alternate;
+        }
+        
+        @keyframes pulse-bg {
+            0% { opacity: 0.3; }
+            100% { opacity: 0.1; }
+        }
+        
+        .main-console {
+            width: 750px;
+            height: 420px;
+            background: linear-gradient(145deg, #2a2a3e, #1a1a2e);
+            border-radius: 25px;
+            padding: 25px;
+            box-shadow: 
+                0 20px 40px rgba(0,0,0,0.4),
+                inset 0 2px 0 rgba(255,255,255,0.1),
+                inset 0 -2px 0 rgba(0,0,0,0.3);
+            position: relative;
+            border: 2px solid rgba(0,255,255,0.3);
+        }
+        
+        .main-console::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #00ffff, #ff00ff, #ffff00, #00ffff);
+            border-radius: 25px;
+            z-index: -1;
+            animation: border-glow 3s linear infinite;
+        }
+        
+        @keyframes border-glow {
+            0% { opacity: 0.5; }
+            50% { opacity: 1; }
+            100% { opacity: 0.5; }
+        }
+        
+        .header-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            border: 1px solid rgba(0,255,255,0.2);
+        }
+        
+        .dev-info {
+            color: #00ffff;
+            font-size: 14px;
+            font-weight: 700;
+            text-shadow: 0 0 10px rgba(0,255,255,0.5);
+        }
+        
+        .timezone-selector {
+            display: flex;
+            gap: 10px;
+        }
+        
+        .timezone-btn {
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(0,255,255,0.3);
+            border-radius: 20px;
+            color: #00ffff;
+            font-family: 'Orbitron', monospace;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .timezone-btn:hover {
+            background: rgba(0,255,255,0.2);
+            box-shadow: 0 0 15px rgba(0,255,255,0.3);
+        }
+        
+        .timezone-btn.active {
+            background: rgba(0,255,255,0.3);
+            box-shadow: 0 0 20px rgba(0,255,255,0.5);
+        }
+        
+        .display-container {
+            width: 100%;
+            height: 280px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 15px;
+            padding: 25px;
+            position: relative;
+            border: 2px solid rgba(0,255,255,0.2);
+            overflow: hidden;
+        }
+        
+        .display-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                linear-gradient(90deg, transparent 0%, rgba(0,255,255,0.1) 50%, transparent 100%),
+                linear-gradient(0deg, transparent 0%, rgba(0,255,255,0.05) 50%, transparent 100%);
+            animation: scan-lines 2s linear infinite;
+        }
+        
+        @keyframes scan-lines {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .poem-area {
+            color: #00ff41;
+            font-size: 22px;
+            line-height: 1.8;
+            font-weight: 400;
+            text-align: center;
+            text-shadow: 0 0 15px rgba(0,255,65,0.4);
+            white-space: pre-line;
+            width: 100%;
+            height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', monospace;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .status-bar {
+            position: absolute;
+            bottom: 15px;
+            left: 25px;
+            right: 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: rgba(0,0,0,0.4);
+            border-radius: 10px;
+            border: 1px solid rgba(0,255,255,0.2);
+        }
+        
+        .current-time {
+            color: #00ffff;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'Orbitron', monospace;
+        }
+        
+        .status-indicators {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+        
+        .status-light {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            animation: status-pulse 1.5s infinite;
+        }
+        
+        .status-light.active {
+            background: #00ff41;
+            box-shadow: 0 0 15px rgba(0,255,65,0.6);
+        }
+        
+        .status-light.generate {
+            background: #ffff00;
+            box-shadow: 0 0 15px rgba(255,255,0,0.6);
+        }
+        
+        .status-light.error {
+            background: #ff0040;
+            box-shadow: 0 0 15px rgba(255,0,64,0.6);
+        }
+        
+        @keyframes status-pulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.6; transform: scale(0.8); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+        
+        .typing-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 22px;
+            background: #00ff41;
+            animation: cursor-blink 1s infinite;
+        }
+        
+        @keyframes cursor-blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+        
+        .watermark {
+            position: absolute;
+            bottom: 5px;
+            right: 15px;
+            color: rgba(0,255,255,0.3);
+            font-size: 10px;
+            font-family: 'Orbitron', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-console">
+        <div class="header-panel">
+            <div class="dev-info">JAM REALTIME INDONESIA | AlfiDev</div>
+            <div class="timezone-selector">
+                <button class="timezone-btn active" data-tz="wib">WIB</button>
+                <button class="timezone-btn" data-tz="wita">WITA</button>
+                <button class="timezone-btn" data-tz="wit">WIT</button>
+            </div>
+        </div>
+        
+        <div class="display-container">
+            <div class="poem-area" id="poem-area"></div>
+            <div class="status-bar">
+                <div class="current-time" id="current-time"></div>
+                <div class="status-indicators">
+                    <div class="status-light active" id="status-light"></div>
+                    <div style="color: #00ffff; font-size: 12px;" id="timezone-label">WIB</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="watermark">Powered by AlfiDev</div>
+    </div>
+
+    <script>
+        const POEM_TEMPLATES = {
+            "id": {
+                "poemPrompt": "Buatlah puisi pendek Indonesia (2-4 baris) yang indah tentang waktu {timeString}. Puisi harus berima dan elegan, fokus pada angka waktu tersebut. Buatlah contemplatif dan presisi seperti haiku namun berima. Jawab HANYA teks puisi tanpa judul atau penjelasan. Gunakan bahasa Indonesia yang puitis.",
+                "fallbackPoems": [
+                    "Pada pukul {timeString} ini\nWaktu bergulir tanpa henti\nDetik demi detik berlalu pergi\nMembawa cerita yang tak terlupakan lagi",
+                    "Jam menunjuk angka {timeString}\nSaat teduh dalam senyap\nMenit berganti dengan tenang\nMenyimpan makna yang tak terbatas",
+                    "Di waktu {timeString} yang sunyi\nJarum jam terus berputar\nMembisikkan cerita hari\nTentang masa yang kan datang"
+                ],
+                "errorMessage": "Gagal membuat puisi:"
+            }
+        };
+
+        const TIMEZONE_OFFSETS = {
+            'wib': 7,
+            'wita': 8, 
+            'wit': 9
+        };
+
+        let currentTimezone = 'wib';
+        let currentMinute = -1;
+        let isGenerating = false;
+        let audioContext;
+
+        const poemArea = document.getElementById('poem-area');
+        const currentTimeEl = document.getElementById('current-time');
+        const statusLight = document.getElementById('status-light');
+        const timezoneLabel = document.getElementById('timezone-label');
+
+        function initAudio() {
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            } catch (e) {
+                console.log('Audio tidak tersedia');
+            }
+        }
+
+        function playTypingSound() {
+            if (!audioContext) return;
+            
+            const osc = audioContext.createOscillator();
+            const gain = audioContext.createGain();
+            
+            osc.connect(gain);
+            gain.connect(audioContext.destination);
+            
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(800 + Math.random() * 200, audioContext.currentTime);
+            
+            gain.gain.setValueAtTime(0, audioContext.currentTime);
+            gain.gain.linearRampToValueAtTime(0.01, audioContext.currentTime + 0.01);
+            gain.gain.exponentialRampToValueAtTime(0.00001, audioContext.currentTime + 0.08);
+            
+            osc.start(audioContext.currentTime);
+            osc.stop(audioContext.currentTime + 0.08);
+        }
+
+        function getIndonesianTime(timezone) {
+            const now = new Date();
+            const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+            const offset = TIMEZONE_OFFSETS[timezone];
+            const indonesianTime = new Date(utc + (offset * 3600000));
+            return indonesianTime;
+        }
+
+        function formatTime(date) {
+            return date.toLocaleTimeString('id-ID', { 
+                hour: '2-digit', 
+                minute: '2-digit',
+                second: '2-digit',
+                hour12: false 
+            });
+        }
+
+        function getRandomFallback(timeString) {
+            const templates = POEM_TEMPLATES.id.fallbackPoems;
+            const randomTemplate = templates[Math.floor(Math.random() * templates.length)];
+            return randomTemplate.replace('{timeString}', timeString);
+        }
+
+        async function generatePoem(time) {
+            const timeString = formatTime(time);
+            
+            if (!window.claude || !window.claude.complete) {
+                return getRandomFallback(timeString);
+            }
+            
+            const prompt = POEM_TEMPLATES.id.poemPrompt.replace('{timeString}', timeString);
+            
+            try {
+                statusLight.className = 'status-light generate';
+                const response = await window.claude.complete(prompt);
+                statusLight.className = 'status-light active';
+                return response.trim();
+            } catch (error) {
+                console.error(POEM_TEMPLATES.id.errorMessage, error);
+                statusLight.className = 'status-light error';
+                setTimeout(() => statusLight.className = 'status-light active', 2000);
+                return getRandomFallback(timeString);
+            }
+        }
+
+        async function typePoem(poem) {
+            isGenerating = true;
+            poemArea.innerHTML = '';
+            
+            for (let i = 0; i < poem.length; i++) {
+                const char = poem[i];
+                poemArea.innerHTML = poem.substring(0, i + 1) + '<span class="typing-cursor"></span>';
+                
+                if (char !== ' ' && char !== '\n') {
+                    playTypingSound();
+                }
+                
+                await new Promise(resolve => setTimeout(resolve, 60));
+            }
+            
+            poemArea.innerHTML = poem;
+            isGenerating = false;
+        }
+
+        async function updateDisplay() {
+            const time = getIndonesianTime(currentTimezone);
+            const newMinute = time.getMinutes();
+            
+            currentTimeEl.textContent = formatTime(time);
+            
+            if (newMinute !== currentMinute && !isGenerating) {
+                currentMinute = newMinute;
+                const poem = await generatePoem(time);
+                await typePoem(poem);
+            }
+        }
+
+        document.querySelectorAll('.timezone-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.timezone-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentTimezone = btn.dataset.tz;
+                timezoneLabel.textContent = btn.dataset.tz.toUpperCase();
+                currentMinute = -1;
+                updateDisplay();
+            });
+        });
+
+        document.addEventListener('click', initAudio, { once: true });
+
+        updateDisplay();
+        setInterval(updateDisplay, 1000);
+    </script>
+</body>
+</html>
